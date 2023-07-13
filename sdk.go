@@ -81,6 +81,10 @@ func (c *TracimDaemonClient) HandleCloseOnSig(sig os.Signal) {
 	signal.Notify(cc, sig)
 	go func() {
 		<-cc
+		err := c.UnregisterFromMaster()
+		if err != nil {
+			log.Print(err)
+		}
 		_ = os.Remove(c.ClientSocketPath)
 		os.Exit(1)
 	}()
