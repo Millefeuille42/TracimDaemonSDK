@@ -12,8 +12,8 @@ func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Ev
 
 func main() {
 	client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
-		MasterSocketPath: "/tmp/tracim_master.sock",
-		ClientSocketPath: "/tmp/tracim_mini_client.sock",
+		MasterSocketPath: os.Getenv("TRACIM_MINICLIENT_MASTER_SOCKET_PATH"),
+		ClientSocketPath: os.Getenv("TRACIM_MINICLIENT_CLIENT_SOCKET_PATH"),
 	})
 
 	client.HandleCloseOnSig(os.Interrupt)
