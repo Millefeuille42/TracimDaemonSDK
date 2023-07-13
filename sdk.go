@@ -8,13 +8,13 @@ import (
 	"os/signal"
 )
 
-type config struct {
+type Config struct {
 	MasterSocketPath string
 	ClientSocketPath string
 }
 
 type TracimDaemonClient struct {
-	config
+	Config
 	ClientSocket  net.Listener
 	EventHandlers map[string]EventHandler
 }
@@ -86,9 +86,9 @@ func (c *TracimDaemonClient) HandleCloseOnSig(sig os.Signal) {
 	}()
 }
 
-func NewClient(conf config) (client *TracimDaemonClient) {
+func NewClient(conf Config) (client *TracimDaemonClient) {
 	client = &TracimDaemonClient{
-		config: conf,
+		Config: conf,
 	}
 
 	return client
