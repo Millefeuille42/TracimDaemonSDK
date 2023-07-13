@@ -1,6 +1,6 @@
 # TracimDaemonSDK
 
-AN SDK for the TracimDaemon
+An SDK for the [TracimDaemon](https://github.com/Millefeuille42/TracimDaemon) project
 
 ## Usage
 
