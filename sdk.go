@@ -92,7 +92,8 @@ func (c *TracimDaemonClient) HandleCloseOnSig(sig os.Signal) {
 
 func NewClient(conf Config) (client *TracimDaemonClient) {
 	client = &TracimDaemonClient{
-		Config: conf,
+		Config:        conf,
+		EventHandlers: make(map[string]EventHandler),
 	}
 
 	return client
