@@ -86,11 +86,12 @@ func (c *TracimDaemonClient) ListenToEvents() {
 			c.callHandler(EventTypeGeneric, &daemonEventData)
 			c.callHandler(daemonEventData.Action, &daemonEventData)
 			if daemonEventData.Action == DaemonTracimEvent && daemonEventData.Data != nil {
-				tlmBytes, err := json.Marshal(daemonEventData.Data)
-				if err != nil {
-					log.Print(err)
+				switch daemonEventData.Data.(type) {
+				case string:
+				default:
 					return
 				}
+				tlmBytes := []byte(daemonEventData.Data.(string))
 				tlmData := TLMEvent{}
 				err = json.Unmarshal(tlmBytes, &tlmData)
 				if err != nil {
