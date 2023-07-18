@@ -224,7 +224,7 @@ With the `fields` field being a JSON object containing the event data.
 
 #### Ack
 
-The master daemon will send a `DaemonAck` upon receiving any events not expecting a response, otherwise the 
+The master daemon will send a `DaemonAck` upon receiving any managed events not expecting a response, otherwise the 
 expected response is sent. As for now, a `DaemonPong` for a `DaemonPing` and a `DaemonAccountInfo` for a `DaemonSubscriptionActionAdd`
 
 The master daemon expects no `DaemonAck` on its messages.
