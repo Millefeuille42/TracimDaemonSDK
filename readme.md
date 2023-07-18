@@ -124,57 +124,61 @@ type TLMEvent struct {
 }
 ```
 
-### Event
+### DaemonEvent
 
-Event is a wrapper for the TLMEvent struct, containing the raw data, the parsed data and the size of the raw data.
+DaemonEvent is the event format used to communicate between apps
 
-It is what's sent from the master to the handlers.
 ```go
-type Event struct {
-    Data       []byte
-    DataParsed TLMEvent
-    Size       int
+type DaemonEvent struct {
+	Path   string `json:"path"`
+	Action string `json:"action"`
+	Data interface{} `json:"data,omitempty"`
 }
 ```
+
+- The `Data` field can contain additional information of any format
+- The `Path` field is the path to the plugin socket (as defined in the config)
+- The `Action` field is any of the following:
+
+```go
+// DaemonSubscriptionActionDelete is the action to send to delete a client
+DaemonSubscriptionActionDelete = "daemon_client_delete"
+// DaemonSubscriptionActionAdd is the action to send to add a client
+DaemonSubscriptionActionAdd = "daemon_client_add"
+// DaemonAck is the action sent by the master to acknowledge the previous action
+DaemonAck = "daemon_ack"
+// DaemonPing is the action sent, expecting a DaemonPong response, used to test responsiveness of the other end
+DaemonPing = "daemon_ping"
+// DaemonPong is the action sent, in response of a DaemonPing, used to test responsiveness of the other end
+DaemonPong = "daemon_pong"
+// DaemonAccountInfo is the action sent to relay the info of the current logged-in user
+DaemonAccountInfo = "daemon_account_info"
+// DaemonTracimEvent is the action sent to relay tracim events
+DaemonTracimEvent = "daemon_tracim_event"
+````
+
+For now, only the `DaemonAccountInfo` and `DaemonTracimEvent` should contain additional data.
 
 ### EventHandler
 
 EventHandler is the function definition for the event handlers.
-It takes a TracimDaemonClient and an Event as parameters
+It takes a `TracimDaemonClient` and a `DaemonEvent` as parameters
 
 ```go
-type EventHandler func(*TracimDaemonClient, *Event)
+type EventHandler func(*TracimDaemonClient, *DaemonEvent)
 ```
+
+By default, handlers for `DaemonAccountInfo` and `DaemonPing` are already defined, it is possible to override them.
 
 ### Event types
 
-Event types are defined by tracim. However, the SDK defines some constants for convenience.
+Event types are defined by tracim. It is also possible to set handlers for every `DaemonEvent` type.
+There also is events defined by the SDK, for convenience.
 
 ```go
-// EventTypeGeneric is the event type for generic events (every message sent by Tracim)
+// EventTypeGeneric is the event type for generic events (every DaemonEvent)
 EventTypeGeneric = "custom_message"
 ```
-
-### DaemonSubscriptionEvent
-
-DaemonSubscriptionEvent is the event sent by the client to the master when it wants to subscribe or unsubscribe
-
-```go
-type DaemonSubscriptionEvent struct {
-	Path   string `json:"path"`
-	Action string `json:"action"`
-}
-```
-
-The `Path` field is the path to the plugin socket (as defined in the config)
-The `Action` field is any of the following:
-
-```go
-// DaemonSubscriptionActionDelete is the action to send to delete a client
-DaemonSubscriptionActionDelete = "client_delete"
-// DaemonSubscriptionActionAdd is the action to send to add a client
-DaemonSubscriptionActionAdd    = "client_add"
-````
 
 ## Protocol (for developers of another language)
 
@@ -187,11 +191,12 @@ The message must be a JSON object with the following structure:
 ```json
 {
     "action": "client_add",
-    "path": "/path/to/plugin/socket"
+    "path": "/path/to/plugin/socket",
+    "data": {}
 }
 ```
 
-The `action` field can be either `client_add` or `client_delete`
+The `action` field can be one of the previously demonstrated types.
 
 To register a plugin, the plugin must send the message to the master socket, with the `action` field set to `client_add`.
 To unregister a plugin, the plugin must send the message to the master socket, with the `action` field set to `client_delete`.
@@ -200,7 +205,7 @@ To unregister a plugin, the plugin must send the message to the master socket, w
 
 Once registered, the plugin will receive events from the master socket.
 
-The events are JSON objects with the following structure:
+The events are JSON objects stored in the `data` field of a `DaemonEvent` with the following structure:
 
 ```json
 {
@@ -214,10 +219,19 @@ The events are JSON objects with the following structure:
 
 With the `fields` field being a JSON object containing the event data.
 
-### Note
 
-For the moment there is no keep_alive mechanism. The plugin MUST unregister itself when it is stopped,
-to avoid multiple messages on the same socket.
+### Ack and Keep-Alive
 
-For now, no acknowledgement is sent by the master daemon when a plugin is registered / unregistered.
-It is planned to communicate user information upon registration, but it is not implemented yet.
+#### Ack
+
+The master daemon will send a `DaemonAck` upon receiving any events not expecting a response, otherwise the 
+expected response is sent. As for now, a `DaemonPong` for a `DaemonPing` and a `DaemonAccountInfo` for a `DaemonSubscriptionActionAdd`
+
+The master daemon expects no `DaemonAck` on its messages.
+
+#### Keep-Alive
+
+The master daemon will periodically (once every minute) send a `DaemonPing` event, clients have a minute to respond with `DaemonPong`,
+If not, it will unregister un-responding clients at the next ping.
+
+It is possible to test the master daemon responsiveness by sending it `DaemonPing` events. It will respond with a `DaemonPong` as soon as possible.
