@@ -32,18 +32,19 @@ const (
 	DaemonTracimEvent = "daemon_tracim_event"
 )
 
+// SendDaemonEvent sends a daemon event to the provided socket
 func (c *TracimDaemonClient) SendDaemonEvent(event *DaemonEvent, socket string) error {
-	masterSocket, err := net.Dial("unix", socket)
+	targetSocket, err := net.Dial("unix", socket)
 	if err != nil {
 		return err
 	}
-	defer masterSocket.Close()
+	defer targetSocket.Close()
 
 	data, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
 
-	_, err = masterSocket.Write(data)
+	_, err = targetSocket.Write(data)
 	return err
 }
