@@ -161,8 +161,8 @@ DaemonSubscriptionEvent is the event sent by the client to the master when it wa
 
 ```go
 type DaemonSubscriptionEvent struct {
-Path   string `json:"path"`
-Action string `json:"action"`
+	Path   string `json:"path"`
+	Action string `json:"action"`
 }
 ```
 
