@@ -35,7 +35,7 @@ func defaultPingHandler(c *TracimDaemonClient, e *DaemonEvent) {
 		return
 	}
 
-	log.Printf("SENT: Ping to %s", e.Path)
+	log.Printf("SOCKET: SEND: %s -> %s", DaemonPong, e.Path)
 }
 
 func defaultAccountInfoHandler(c *TracimDaemonClient, e *DaemonEvent) {
@@ -48,5 +48,5 @@ func defaultAccountInfoHandler(c *TracimDaemonClient, e *DaemonEvent) {
 		c.UserID = e.Data.(string)
 	}
 
-	log.Printf("Got user info from %s", e.Path)
+	log.Printf("SOCKET: RECV: %s -> %s", e.Action, e.Path)
 }
