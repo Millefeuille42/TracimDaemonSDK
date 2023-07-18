@@ -48,5 +48,5 @@ func defaultAccountInfoHandler(c *TracimDaemonClient, e *DaemonEvent) {
 		c.UserID = e.Data.(string)
 	}
 
-	log.Printf("Got user info from %d", e.Path)
+	log.Printf("Got user info from %s", e.Path)
 }
