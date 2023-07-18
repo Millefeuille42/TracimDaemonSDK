@@ -37,12 +37,6 @@ if err != nil {
 defer client.ClientSocket.Close()
 ```
 
-Register the plugin to the master daemon
-
-```go
-client.RegisterHandler(TracimDaemonSDK.EventTypeGeneric, genericHandler)
-```
-
 Set up various handlers
 
 ```go
@@ -55,6 +49,16 @@ With `genericHandler` being a function with the following signature:
 func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Event) {
     log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.DataParsed.EventType)
 }
+```
+
+Register the plugin to the master daemon
+
+```go
+	err = client.RegisterToMaster()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 ```
 
 Start the client
