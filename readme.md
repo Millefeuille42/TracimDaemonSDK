@@ -54,11 +54,11 @@ func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Ev
 Register the plugin to the master daemon
 
 ```go
-	err = client.RegisterToMaster()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+err = client.RegisterToMaster()
+if err != nil {
+    log.Fatal(err)
+    return
+}
 ```
 
 Start the client
