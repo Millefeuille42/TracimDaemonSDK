@@ -35,18 +35,18 @@ func (c *TracimDaemonClient) callHandler(eventType string, eventData *DaemonEven
 // RegisterToMaster registers the client to the master
 func (c *TracimDaemonClient) RegisterToMaster() error {
 	return c.SendDaemonEvent(&DaemonEvent{
-		Path:   c.ClientSocketPath,
-		Action: DaemonSubscriptionActionAdd,
-		Data:   nil,
+		Path: c.ClientSocketPath,
+		Type: DaemonClientAdd,
+		Data: nil,
 	}, c.MasterSocketPath)
 }
 
 // UnregisterFromMaster unregisters the client from the master
 func (c *TracimDaemonClient) UnregisterFromMaster() error {
 	return c.SendDaemonEvent(&DaemonEvent{
-		Path:   c.ClientSocketPath,
-		Action: DaemonSubscriptionActionDelete,
-		Data:   nil,
+		Path: c.ClientSocketPath,
+		Type: DaemonClientDelete,
+		Data: nil,
 	}, c.MasterSocketPath)
 }
 
@@ -84,8 +84,8 @@ func (c *TracimDaemonClient) ListenToEvents() {
 			}
 
 			c.callHandler(EventTypeGeneric, &daemonEventData)
-			c.callHandler(daemonEventData.Action, &daemonEventData)
-			if daemonEventData.Action == DaemonTracimEvent && daemonEventData.Data != nil {
+			c.callHandler(daemonEventData.Type, &daemonEventData)
+			if daemonEventData.Type == DaemonTracimEvent && daemonEventData.Data != nil {
 				switch daemonEventData.Data.(type) {
 				case string:
 				default:

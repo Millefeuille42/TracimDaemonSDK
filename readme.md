@@ -14,7 +14,7 @@ Create a new TracimDaemon client
 
 ```go
 client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
-	MasterSocketPath: "path/to/master/socket",
+	MasterSocketPath: "path/to/daemon/socket",
 	ClientSocketPath: "path/to/client/socket",
 })
 ```
@@ -26,7 +26,7 @@ client.HandleCloseOnSig(os.Interrupt)
 client.HandleCloseOnSig(os.Kill)
 ```
 
-Create and listen to the plugin socket
+Create and listen to the client socket
 
 ```go
 err := client.CreateClientSocket()
@@ -51,7 +51,7 @@ func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Ev
 }
 ```
 
-Register the plugin to the master daemon
+Register the client to the daemon daemon
 
 ```go
 err = client.RegisterToMaster()
@@ -131,33 +131,16 @@ DaemonEvent is the event format used to communicate between apps
 ```go
 type DaemonEvent struct {
 	Path   string `json:"path"`
-	Action string `json:"action"`
+	Type string `json:"type"`
 	Data interface{} `json:"data,omitempty"`
 }
 ```
 
 - The `Data` field can contain additional information of any format
-- The `Path` field is the path to the plugin socket (as defined in the config)
-- The `Action` field is any of the following:
+- The `Path` field is the path to the client socket (as defined in the config)
+- The `Type` field is any of the Daemon* constants defined in `daemonEvents.go`
 
-```go
-// DaemonSubscriptionActionDelete is the action to send to delete a client
-DaemonSubscriptionActionDelete = "daemon_client_delete"
-// DaemonSubscriptionActionAdd is the action to send to add a client
-DaemonSubscriptionActionAdd = "daemon_client_add"
-// DaemonAck is the action sent by the master to acknowledge the previous action
-DaemonAck = "daemon_ack"
-// DaemonPing is the action sent, expecting a DaemonPong response, used to test responsiveness of the other end
-DaemonPing = "daemon_ping"
-// DaemonPong is the action sent, in response of a DaemonPing, used to test responsiveness of the other end
-DaemonPong = "daemon_pong"
-// DaemonAccountInfo is the action sent to relay the info of the current logged-in user
-DaemonAccountInfo = "daemon_account_info"
-// DaemonTracimEvent is the action sent to relay tracim events
-DaemonTracimEvent = "daemon_tracim_event"
-````
-
-For now, only the `DaemonAccountInfo` and `DaemonTracimEvent` should contain additional data.
+A `Type` is expected to contain additional data if there is a `<eventType>Data` struct defined in `daemonEvents.go`.
 
 ### EventHandler
 
@@ -182,56 +165,68 @@ EventTypeGeneric = "custom_message"
 
 ## Protocol (for developers of another language)
 
-### Registering / unregistering a plugin
+### Communication
 
-When registering / unregistering a plugin a basic message must be sent on the master socket.
-
-The message must be a JSON object with the following structure:
+Client and daemons communicate with the `DaemonEvent` format, i.e. JSON data following this format:
 
 ```json
 {
-    "action": "client_add",
-    "path": "/path/to/plugin/socket",
+    "type": "event_type",
+    "path": "/path/to/client/socket",
     "data": {}
 }
 ```
 
-The `action` field can be one of the previously demonstrated types.
+(See above `DaemonEvent` section for details about each field)
 
-To register a plugin, the plugin must send the message to the master socket, with the `action` field set to `client_add`.
-To unregister a plugin, the plugin must send the message to the master socket, with the `action` field set to `client_delete`.
+### Registering / unregistering a client
 
-### Receiving events
-
-Once registered, the plugin will receive events from the master socket.
-
-The events are JSON objects stored in the `data` field of a `DaemonEvent` with the following structure:
+When registering / unregistering a client a `DaemonEvent` must be sent on the daemon socket.
 
 ```json
 {
-    "event_id": 1,
-    "event_type": "custom_message",
-    "read": false,
-    "created": "2020-01-01T00:00:00Z",
-    "fields": {}
+    "type": "client_add",
+    "path": "/path/to/client/socket",
+    "data": {
+      "path": "/path/to/client/socket",
+      "pid": 999
+    }
 }
 ```
 
-With the `fields` field being a JSON object containing the event data.
+To register a client, the client must send the message to the daemon socket, with the `type` field set to `client_add`.
+To unregister a client, the client must send the message to the daemon socket, with the `type` field set to `client_delete`.
 
+In both, additional info, defined as follows, is required:
+
+```json
+{
+  "path": "/path/to/client/socket",
+  "pid": 999
+}
+```
+
+With `pid` being the PID of the client process.
+
+### Receiving events
+
+Once registered, the client will receive `DaemonEvent`s from the daemon.
+
+(See above `DaemonEvent` section for details about types and data)
 
 ### Ack and Keep-Alive
 
 #### Ack
 
-The master daemon will send a `DaemonAck` upon receiving any managed events not expecting a response, otherwise the 
-expected response is sent. As for now, a `DaemonPong` for a `DaemonPing` and a `DaemonAccountInfo` for a `DaemonSubscriptionActionAdd`
+The daemon will send a `DaemonAck` upon receiving any managed events not expecting a response, otherwise the 
+expected response is sent. As for now, a `DaemonPong` for a `DaemonPing` and a `DaemonAccountInfo` for a `DaemonClientAdd`
 
-The master daemon expects no `DaemonAck` on its messages.
+The daemon expects no `DaemonAck` on its messages.
 
-#### Keep-Alive
+#### Keep-Alive[
 
-The master daemon will periodically (once every minute) send a `DaemonPing` event, clients have a minute to respond with `DaemonPong`,
+The daemon will periodically (once every minute) send a `DaemonPing` event, clients have a minute to respond with `DaemonPong`,
 If not, it will unregister un-responding clients at the next ping.
 
-It is possible to test the master daemon responsiveness by sending it `DaemonPing` events. It will respond with a `DaemonPong` as soon as possible.
+It is possible to test the daemon responsiveness by sending it `DaemonPing` events. It will respond with a `DaemonPong` as soon as possible.
+]()

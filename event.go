@@ -25,9 +25,9 @@ const (
 
 func defaultPingHandler(c *TracimDaemonClient, e *DaemonEvent) {
 	err := c.SendDaemonEvent(&DaemonEvent{
-		Path:   c.ClientSocketPath,
-		Action: DaemonPong,
-		Data:   nil,
+		Path: c.ClientSocketPath,
+		Type: DaemonPong,
+		Data: nil,
 	}, e.Path)
 
 	if err != nil {
@@ -39,14 +39,17 @@ func defaultPingHandler(c *TracimDaemonClient, e *DaemonEvent) {
 }
 
 func defaultAccountInfoHandler(c *TracimDaemonClient, e *DaemonEvent) {
-	if e.Data == nil || e.Path != c.MasterSocketPath {
+	if e.Path != c.MasterSocketPath {
 		return
 	}
 
-	switch e.Data.(type) {
-	case string:
-		c.UserID = e.Data.(string)
+	err := ParseDaemonData(e, &DaemonAccountInfoData{})
+	if err != nil {
+		log.Print(err)
+		return
 	}
 
-	log.Printf("SOCKET: RECV: %s -> %s", e.Action, e.Path)
+	c.UserID = e.Data.(*DaemonAccountInfoData).UserId
+
+	log.Printf("SOCKET: RECV: %s -> %s", e.Type, e.Path)
 }
