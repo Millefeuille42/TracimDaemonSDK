@@ -129,7 +129,7 @@ type DaemonClientData struct {
 	// Path to the socket of the client
 	Path string `json:"path"`
 	// Pid of the client
-	Pid int `json:"pid"`
+	Pid string `json:"pid"`
 }
 
 /* Client to Daemon types */

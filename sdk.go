@@ -2,6 +2,7 @@ package TracimDaemonSDK
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -39,7 +40,7 @@ func (c *TracimDaemonClient) RegisterToMaster() error {
 		Type: DaemonClientAdd,
 		Data: DaemonClientAddData{
 			Path: c.ClientSocketPath,
-			Pid:  os.Getpid(),
+			Pid:  fmt.Sprintf("%d", os.Getpid()),
 		},
 	}, c.MasterSocketPath)
 }
@@ -51,7 +52,7 @@ func (c *TracimDaemonClient) UnregisterFromMaster() error {
 		Type: DaemonClientDelete,
 		Data: DaemonClientAddData{
 			Path: c.ClientSocketPath,
-			Pid:  os.Getpid(),
+			Pid:  fmt.Sprintf("%d", os.Getpid()),
 		},
 	}, c.MasterSocketPath)
 }
