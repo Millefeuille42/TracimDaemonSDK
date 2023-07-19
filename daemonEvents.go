@@ -47,8 +47,11 @@ const DaemonClientDelete = "daemon_client_delete"
 // DaemonGetClients is the event sent by a client to the daemon to get a list of the currently active clients
 const DaemonGetClients = "daemon_get_clients"
 
+// DaemonGetAccountInfo is the event sent by a client to the daemon to get info about the logged-in user
+const DaemonGetAccountInfo = "daemon_get_account_info"
+
 // DaemonDoRequest is the event sent by a client to the daemon to make a request to the tracim API
-const DaemonDoRequest = "daemon_make_request"
+const DaemonDoRequest = "daemon_do_request"
 
 /* Any to Any events */
 
@@ -63,11 +66,14 @@ const DaemonPong = "daemon_pong"
 
 /* Daemon to Client events */
 
-// DaemonRequestResult is the event sent by the daemon in response to the DaemonMakeRequest event
+// DaemonRequestResult is the event sent by the daemon in response to the DaemonDoRequest event
 const DaemonRequestResult = "daemon_request_result"
 
-// DaemonAccountInfo is the event sent by the daemon in response to a DaemonSubscriptionActionAdd event, it contains info about the logged-in user
+// DaemonAccountInfo is the event sent by the daemon in response to a DaemonClientAdd or DaemonGetAccountInfo event, it contains info about the logged-in user
 const DaemonAccountInfo = "daemon_account_info"
+
+// DaemonClients is the event sent by the daemon in response to a DaemonGetClients event, it contains info about the currently registered clients
+const DaemonClients = "daemon_clients"
 
 /* Daemon to all Clients events */
 
@@ -132,14 +138,14 @@ type DaemonClientAddData DaemonClientData
 // DaemonClientDeleteData is the data sent for DaemonClientDelete events
 type DaemonClientDeleteData DaemonClientData
 
-// DaemonGetClientsData is the data sent for DaemonGetClients events
-type DaemonGetClientsData []DaemonClientData
-
 // DaemonDoRequestData is the data sent for DaemonDoRequest events
 type DaemonDoRequestData struct {
-	Method   string
+	// Method of the request
+	Method string
+	// Endpoint of the request (appended to <protocol>://<tracim_host>:<port>/api)
 	Endpoint string
-	Body     []byte
+	// Body of the request
+	Body []byte
 }
 
 /* Any to Any types */
@@ -169,6 +175,9 @@ type DaemonAccountInfoData struct {
 	// UserId is the tracim user ID used by the daemon
 	UserId string `json:"user_id"`
 }
+
+// DaemonClientsData is the data sent for DaemonClients events
+type DaemonClientsData []DaemonClientData
 
 /* Daemon to all Clients types */
 
