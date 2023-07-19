@@ -37,7 +37,10 @@ func (c *TracimDaemonClient) RegisterToMaster() error {
 	return c.SendDaemonEvent(&DaemonEvent{
 		Path: c.ClientSocketPath,
 		Type: DaemonClientAdd,
-		Data: nil,
+		Data: DaemonClientAddData{
+			Path: c.ClientSocketPath,
+			Pid:  os.Getpid(),
+		},
 	}, c.MasterSocketPath)
 }
 
@@ -46,7 +49,10 @@ func (c *TracimDaemonClient) UnregisterFromMaster() error {
 	return c.SendDaemonEvent(&DaemonEvent{
 		Path: c.ClientSocketPath,
 		Type: DaemonClientDelete,
-		Data: nil,
+		Data: DaemonClientAddData{
+			Path: c.ClientSocketPath,
+			Pid:  os.Getpid(),
+		},
 	}, c.MasterSocketPath)
 }
 
