@@ -108,10 +108,10 @@ func ParseDaemonData(e *DaemonEvent, reference interface{}) error {
 	for i := 0; i < structValue.NumField(); i++ {
 		field := structValue.Field(i)
 		fieldType := structType.Field(i)
-		fieldName := fieldType.Name
-
-		if val, ok := srcAsMap[fieldName]; ok {
-			field.Set(reflect.ValueOf(val))
+		if tagVal, ok := fieldType.Tag.Lookup("json"); ok {
+			if val, ok := srcAsMap[tagVal]; ok {
+				field.Set(reflect.ValueOf(val))
+			}
 		}
 	}
 
