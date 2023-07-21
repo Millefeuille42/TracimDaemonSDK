@@ -69,7 +69,11 @@ func (c *TracimDaemonClient) ListenToEvents() {
 	for {
 		conn, err := c.ClientSocket.Accept()
 		if err != nil {
-			c.log(err)
+			c.callHandler(EventTypeError, &DaemonEvent{
+				Path: "",
+				Type: EventTypeError,
+				Data: err,
+			})
 			continue
 		}
 
@@ -79,14 +83,22 @@ func (c *TracimDaemonClient) ListenToEvents() {
 
 			n, err := conn.Read(buf)
 			if err != nil {
-				c.log(err)
+				c.callHandler(EventTypeError, &DaemonEvent{
+					Path: "",
+					Type: EventTypeError,
+					Data: err,
+				})
 				return
 			}
 
 			daemonEventData := DaemonEvent{}
 			err = json.Unmarshal(buf[:n], &daemonEventData)
 			if err != nil {
-				c.log(err)
+				c.callHandler(EventTypeError, &DaemonEvent{
+					Path: "",
+					Type: EventTypeError,
+					Data: err,
+				})
 				return
 			}
 
@@ -102,7 +114,11 @@ func (c *TracimDaemonClient) ListenToEvents() {
 				tlmData := TLMEvent{}
 				err = json.Unmarshal(tlmBytes, &tlmData)
 				if err != nil {
-					c.log(err)
+					c.callHandler(EventTypeError, &DaemonEvent{
+						Path: "",
+						Type: EventTypeError,
+						Data: err,
+					})
 					return
 				}
 				c.callHandler(tlmData.EventType, &daemonEventData)
@@ -142,6 +158,7 @@ func NewClient(conf Config) (client *TracimDaemonClient) {
 
 	client.EventHandlers[DaemonPing] = defaultPingHandler
 	client.EventHandlers[DaemonAccountInfo] = defaultAccountInfoHandler
+	client.EventHandlers[EventTypeError] = defaultErrorHandler
 
 	return client
 }

@@ -232,6 +232,8 @@ There also is events defined by the SDK, for convenience.
 ```go
 // EventTypeGeneric is the event type for generic events (every DaemonEvent)
 EventTypeGeneric = "custom_message"
+// EventTypeError is the event type for errors
+EventTypeError = "custom_error"
 ```
 
 ## Protocol (for developers of another language)

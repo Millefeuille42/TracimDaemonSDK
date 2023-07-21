@@ -21,7 +21,15 @@ type EventHandler func(*TracimDaemonClient, *DaemonEvent)
 const (
 	// EventTypeGeneric is the event type for generic events (every DaemonEvent)
 	EventTypeGeneric = "custom_message"
+	// EventTypeError is the event type for errors
+	EventTypeError = "custom_error"
 )
+
+// TypeErrorData is the data sent for EventTypeError events
+type TypeErrorData struct {
+	// UserId is the tracim user ID used by the daemon
+	Error string `json:"error"`
+}
 
 func defaultPingHandler(c *TracimDaemonClient, e *DaemonEvent) {
 	err := c.SendDaemonEvent(&DaemonEvent{
@@ -52,4 +60,14 @@ func defaultAccountInfoHandler(c *TracimDaemonClient, e *DaemonEvent) {
 	c.UserID = e.Data.(*DaemonAccountInfoData).UserId
 
 	c.log(fmt.Sprintf("SOCKET: RECV: %s -> %s", e.Type, e.Path))
+}
+
+func defaultErrorHandler(c *TracimDaemonClient, e *DaemonEvent) {
+	err := ParseDaemonData(e, &TypeErrorData{})
+	if err != nil {
+		c.log(err)
+		return
+	}
+
+	c.log(e.Data.(*TypeErrorData).Error)
 }
