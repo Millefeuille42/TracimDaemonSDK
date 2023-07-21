@@ -7,40 +7,109 @@ An SDK for the [TracimDaemon](https://github.com/Millefeuille42/TracimDaemon) pr
 Import the package
 
 ```go
+package main
+
 import "github.com/Millefeuille42/TracimDaemonSDK"
 ```
 
 Create a new TracimDaemon client
 
 ```go
-client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
-	MasterSocketPath: "path/to/daemon/socket",
-	ClientSocketPath: "path/to/client/socket",
-})
+package main
+
+import "github.com/Millefeuille42/TracimDaemonSDK"
+
+func main() {
+	client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
+		MasterSocketPath: "path/to/daemon/socket",
+		ClientSocketPath: "path/to/client/socket",
+	})	
+}
 ```
 
 Set up handlers for signals (for proper shutdown)
 
 ```go
-client.HandleCloseOnSig(os.Interrupt)
-client.HandleCloseOnSig(os.Kill)
+package main
+
+import (
+	"github.com/Millefeuille42/TracimDaemonSDK"
+	"os"
+)
+
+func main() {
+	client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
+		MasterSocketPath: "path/to/daemon/socket",
+		ClientSocketPath: "path/to/client/socket",
+	})
+	
+	client.HandleCloseOnSig(os.Interrupt)
+	client.HandleCloseOnSig(os.Kill)
+}
 ```
 
 Create and listen to the client socket
 
 ```go
-err := client.CreateClientSocket()
-if err != nil {
-	log.Fatal(err)
-	return
+package main
+
+import (
+	"github.com/Millefeuille42/TracimDaemonSDK"
+	"log"
+	"os"
+)
+
+func main() {
+	client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
+		MasterSocketPath: "path/to/daemon/socket",
+		ClientSocketPath: "path/to/client/socket",
+	})
+
+	client.HandleCloseOnSig(os.Interrupt)
+	client.HandleCloseOnSig(os.Kill)
+	
+	err := client.CreateClientSocket()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer client.ClientSocket.Close()
 }
-defer client.ClientSocket.Close()
 ```
 
 Set up various handlers
 
 ```go
-client.RegisterHandler(TracimDaemonSDK.EventTypeGeneric, genericHandler)
+package main
+
+import (
+	"github.com/Millefeuille42/TracimDaemonSDK"
+	"log"
+	"os"
+)
+
+func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Event) {
+	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.DataParsed.EventType)
+}
+
+func main() {
+	client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
+		MasterSocketPath: "path/to/daemon/socket",
+		ClientSocketPath: "path/to/client/socket",
+	})
+
+	client.HandleCloseOnSig(os.Interrupt)
+	client.HandleCloseOnSig(os.Kill)
+
+	err := client.CreateClientSocket()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer client.ClientSocket.Close()
+
+	client.RegisterHandler(TracimDaemonSDK.EventTypeGeneric, genericHandler)
+}
 ```
 
 With `genericHandler` being a function with the following signature:
@@ -54,17 +123,85 @@ func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Ev
 Register the client to the daemon daemon
 
 ```go
-err = client.RegisterToMaster()
-if err != nil {
-    log.Fatal(err)
-    return
+package main
+
+import (
+	"github.com/Millefeuille42/TracimDaemonSDK"
+	"log"
+	"os"
+)
+
+func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Event) {
+	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.DataParsed.EventType)
+}
+
+func main() {
+	client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
+		MasterSocketPath: "path/to/daemon/socket",
+		ClientSocketPath: "path/to/client/socket",
+	})
+
+	client.HandleCloseOnSig(os.Interrupt)
+	client.HandleCloseOnSig(os.Kill)
+
+	err := client.CreateClientSocket()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer client.ClientSocket.Close()
+
+	client.RegisterHandler(TracimDaemonSDK.EventTypeGeneric, genericHandler)
+
+	err = client.RegisterToMaster()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 }
 ```
 
 Start the client
 
 ```go
-client.ListenToEvents()
+package main
+
+import (
+	"github.com/Millefeuille42/TracimDaemonSDK"
+	"log"
+	"os"
+)
+
+func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Event) {
+	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.DataParsed.EventType)
+}
+
+func main() {
+	client := TracimDaemonSDK.NewClient(TracimDaemonSDK.Config{
+		MasterSocketPath: "path/to/daemon/socket",
+		ClientSocketPath: "path/to/client/socket",
+	})
+
+	client.HandleCloseOnSig(os.Interrupt)
+	client.HandleCloseOnSig(os.Kill)
+
+	err := client.CreateClientSocket()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer client.ClientSocket.Close()
+
+	client.RegisterHandler(TracimDaemonSDK.EventTypeGeneric, genericHandler)
+
+	err = client.RegisterToMaster()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	
+	client.ListenToEvents()
+}
 ```
 
 The "minimal" client code is as follows:
@@ -223,10 +360,10 @@ expected response is sent. As for now, a `DaemonPong` for a `DaemonPing` and a `
 
 The daemon expects no `DaemonAck` on its messages.
 
-#### Keep-Alive[
+#### Keep-Alive
 
 The daemon will periodically (once every minute) send a `DaemonPing` event, clients have a minute to respond with `DaemonPong`,
 If not, it will unregister un-responding clients at the next ping.
 
 It is possible to test the daemon responsiveness by sending it `DaemonPing` events. It will respond with a `DaemonPong` as soon as possible.
-]()
+
