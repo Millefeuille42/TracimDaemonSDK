@@ -15,8 +15,8 @@ func main() {
 		MasterSocketPath: os.Getenv("TRACIM_MINICLIENT_MASTER_SOCKET_PATH"),
 		ClientSocketPath: os.Getenv("TRACIM_MINICLIENT_CLIENT_SOCKET_PATH"),
 	})
+	defer client.Close()
 
-	client.HandleCloseOnSig(os.Interrupt)
 	err := client.CreateClientSocket()
 	if err != nil {
 		log.Fatal(err)

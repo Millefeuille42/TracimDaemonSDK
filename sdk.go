@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/signal"
 )
 
 // Config is the configuration of the TracimDaemonClient
@@ -116,19 +115,12 @@ func (c *TracimDaemonClient) RegisterHandler(eventType string, handler EventHand
 	c.EventHandlers[eventType] = handler
 }
 
-// HandleCloseOnSig handles the closing of the client on a specific signal
-func (c *TracimDaemonClient) HandleCloseOnSig(sig os.Signal) {
-	cc := make(chan os.Signal, 1)
-	signal.Notify(cc, sig)
-	go func() {
-		<-cc
-		err := c.UnregisterFromMaster()
-		if err != nil {
-			log.Print(err)
-		}
-		_ = os.Remove(c.ClientSocketPath)
-		os.Exit(1)
-	}()
+func (c *TracimDaemonClient) Close() {
+	err := c.UnregisterFromMaster()
+	if err != nil {
+		log.Print(err)
+	}
+	_ = os.Remove(c.ClientSocketPath)
 }
 
 // NewClient creates a new TracimDaemonClient
