@@ -66,8 +66,8 @@ import (
 	"os"
 )
 
-func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Event) {
-	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.DataParsed.EventType)
+func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.DaemonEvent) {
+	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.Type)
 }
 
 func main() {
@@ -107,8 +107,8 @@ import (
 	"os"
 )
 
-func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Event) {
-	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.DataParsed.EventType)
+func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.DaemonEvent) {
+	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.Type)
 }
 
 func main() {
@@ -148,8 +148,8 @@ import (
 	"os"
 )
 
-func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.Event) {
-	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.DataParsed.EventType)
+func genericHandler(c *TracimDaemonSDK.TracimDaemonClient, e *TracimDaemonSDK.DaemonEvent) {
+	log.Printf("%s RECV: %s\n", c.Config.ClientSocketPath, e.Type)
 }
 
 func main() {
