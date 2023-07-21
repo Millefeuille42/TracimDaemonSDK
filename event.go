@@ -1,7 +1,7 @@
 package TracimDaemonSDK
 
 import (
-	"log"
+	"fmt"
 	"time"
 )
 
@@ -31,11 +31,11 @@ func defaultPingHandler(c *TracimDaemonClient, e *DaemonEvent) {
 	}, e.Path)
 
 	if err != nil {
-		log.Print(err)
+		c.log(err)
 		return
 	}
 
-	log.Printf("SOCKET: SEND: %s -> %s", DaemonPong, e.Path)
+	c.log(fmt.Sprintf("SOCKET: SEND: %s -> %s", DaemonPong, e.Path))
 }
 
 func defaultAccountInfoHandler(c *TracimDaemonClient, e *DaemonEvent) {
@@ -45,11 +45,11 @@ func defaultAccountInfoHandler(c *TracimDaemonClient, e *DaemonEvent) {
 
 	err := ParseDaemonData(e, &DaemonAccountInfoData{})
 	if err != nil {
-		log.Print(err)
+		c.log(err)
 		return
 	}
 
 	c.UserID = e.Data.(*DaemonAccountInfoData).UserId
 
-	log.Printf("SOCKET: RECV: %s -> %s", e.Type, e.Path)
+	c.log(fmt.Sprintf("SOCKET: RECV: %s -> %s", e.Type, e.Path))
 }

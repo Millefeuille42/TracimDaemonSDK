@@ -177,6 +177,8 @@ func main() {
 }
 ```
 
+A custom logger can also be set in the `Logger` field of the `TracimDaemonClient`
+
 ## Definitions
 
 ### TLMEvent
