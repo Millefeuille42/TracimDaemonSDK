@@ -97,7 +97,7 @@ func (c *TracimDaemonClient) ListenToEvents() {
 				c.callHandler(EventTypeError, &DaemonEvent{
 					Path: "",
 					Type: EventTypeError,
-					Data: err,
+					Data: TypeErrorData{Error: err.Error()},
 				})
 				return
 			}
