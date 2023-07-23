@@ -262,7 +262,7 @@ When registering / unregistering a client a `DaemonEvent` must be sent on the da
     "path": "/path/to/client/socket",
     "data": {
       "path": "/path/to/client/socket",
-      "pid": 999
+      "pid": "999"
     }
 }
 ```
@@ -275,7 +275,7 @@ In both, additional info, defined as follows, is required:
 ```json
 {
   "path": "/path/to/client/socket",
-  "pid": 999
+  "pid": "999"
 }
 ```
 
